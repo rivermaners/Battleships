@@ -1,6 +1,7 @@
+// login_screen.dart
 import 'package:flutter/material.dart';
-import 'package:battleships/helpers/database_helper.dart';
-import 'package:battleships/views/home_screen.dart'; // Import the HomeScreen widget
+import 'package:battleships/services/api_service.dart';
+import 'package:battleships/views/game_list.dart'; // Import the game list page
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -19,41 +20,20 @@ class _LoginScreenState extends State<LoginScreen> {
     final String username = _usernameController.text;
     final String password = _passwordController.text;
 
-    if (username.isNotEmpty && password.isNotEmpty) {
-      // Perform login logic here
-      final bool success = await _authenticateUser(username, password);
+    try {
+      final response = await ApiService.login(username, password);
+      // Handle successful login
+      print('Login successful: $response');
 
-      if (success) {
-        // Navigate to the home screen if login is successful
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
-        );
-      } else {
-        setState(() {
-          _errorMessage = 'Invalid username or password.';
-        });
-      }
-    } else {
+      // Navigate to the game list page
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => GameList()),
+      );
+    } catch (e) {
       setState(() {
-        _errorMessage = 'Please enter a valid username and password.';
+        _errorMessage = 'Failed to login: $e';
       });
-    }
-  }
-
-  Future<bool> _authenticateUser(String username, String password) async {
-    // Get user data from local database
-    final userData = await DatabaseHelper.getUserData();
-    final String? storedUsername = userData['username'];
-    final String? storedPassword = userData['password'];
-
-    // Check if the entered username and password match the stored credentials
-    if (username == storedUsername && password == storedPassword) {
-      // Authentication successful
-      return true;
-    } else {
-      // Authentication failed
-      return false;
     }
   }
 
@@ -96,6 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
             SizedBox(height: 12),
             TextButton(
               onPressed: () {
+                // Navigate to the registration screen
                 Navigator.pushNamed(context, '/registration');
               },
               child: Text('Don\'t have an account? Register'),

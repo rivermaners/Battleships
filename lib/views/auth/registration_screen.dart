@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:battleships/helpers/database_helper.dart';
+import 'package:battleships/services/api_service.dart';
+import 'package:battleships/views/auth/login_screen.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({Key? key}) : super(key: key);
@@ -18,16 +19,19 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     final String username = _usernameController.text;
     final String password = _passwordController.text;
 
-    if (username.isNotEmpty && password.isNotEmpty) {
-      // Save user data to local database
-      await DatabaseHelper.saveUserData(
-          username, password); // Update call to match the new method signature
+    try {
+      final response = await ApiService.register(username, password);
+      // Handle successful registration
+      print('Registration successful: $response');
+
       // Navigate to the login screen
-      Navigator.pushReplacementNamed(
-          context, '/'); // Navigate to the login screen
-    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+      );
+    } catch (e) {
       setState(() {
-        _errorMessage = 'Please enter a valid username and password.';
+        _errorMessage = 'Failed to register: $e';
       });
     }
   }
