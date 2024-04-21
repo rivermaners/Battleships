@@ -19,12 +19,11 @@ class MyApp extends StatelessWidget {
       title: 'Battleships',
       initialRoute: '/',
       routes: {
-        '/': (context) => LoginScreen(),
-        '/registration': (context) => RegistrationScreen(),
-        '/login': (context) => LoginScreen(),
+        '/': (context) => const LoginScreen(),
+        '/registration': (context) => const RegistrationScreen(),
+        '/login': (context) => const LoginScreen(),
         '/game_list': (context) => GameList(),
-        '/new_game': (context) => NewGame(),
-        // Adding the new route for GameView
+        '/new_game': (context) => const NewGame(),
         '/game_view': (context) =>
             GameView(gameId: ModalRoute.of(context)!.settings.arguments as int),
       },

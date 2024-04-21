@@ -25,9 +25,7 @@ class _GameViewState extends State<GameView> {
       final game = await ApiService.getGame(widget.gameId);
       setState(() {
         _game = game;
-        _isUserTurn = _game['turn'] ==
-            _game[
-                'position']; // Adjust this based on your API response structure
+        _isUserTurn = _game['turn'] == _game['position'];
       });
     } catch (e) {
       ScaffoldMessenger.of(context)
@@ -38,16 +36,16 @@ class _GameViewState extends State<GameView> {
   void _playShot(String position) async {
     if (!_isUserTurn) {
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("It's not your turn")));
+          .showSnackBar(const SnackBar(content: Text("It's not your turn")));
       return;
     }
     try {
       final result = await ApiService.playShot(widget.gameId, position);
       if (result.containsKey('won') && result['won']) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('You won the game!')));
+            .showSnackBar(const SnackBar(content: Text('You won the game!')));
       }
-      _refreshGame(); // Refresh the game state to reflect the changes
+      _refreshGame();
     } catch (e) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('Failed to play shot: $e')));
@@ -57,14 +55,14 @@ class _GameViewState extends State<GameView> {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-    double cellSize = screenWidth / 5; // Assuming a 5x5 grid
+    double cellSize = screenWidth / 5;
 
     return Scaffold(
       appBar: AppBar(
         title: Text('Game ${widget.gameId}'),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             onPressed: _refreshGame,
           ),
         ],
@@ -82,7 +80,7 @@ class _GameViewState extends State<GameView> {
           bool isShot = _game['shots']?.contains(position) ?? false;
           bool isSunk = _game['sunk']?.contains(position) ?? false;
 
-          Color cellColor = Colors.white; // Default color for water
+          Color cellColor = Colors.white;
           if (isShip) cellColor = Colors.blue;
           if (isWreck) cellColor = Colors.black;
           if (isShot) cellColor = Colors.grey;

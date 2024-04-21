@@ -31,7 +31,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     if (!_validateInputs()) return;
 
     setState(() {
-      _isLoading = true; // Start loading
+      _isLoading = true;
     });
 
     final String username = _usernameController.text;
@@ -42,7 +42,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       print('Registration successful: $response');
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => LoginScreen()),
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
     } catch (e) {
       setState(() {
@@ -50,7 +50,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       });
     } finally {
       setState(() {
-        _isLoading = false; // Stop loading
+        _isLoading = false;
       });
     }
   }
@@ -66,7 +66,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Registration'),
+        title: const Text('Registration'),
         backgroundColor: Colors.blue,
       ),
       body: Padding(
@@ -78,15 +78,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             if (_errorMessage.isNotEmpty)
               Text(
                 _errorMessage,
-                style: TextStyle(color: Colors.red),
+                style: const TextStyle(color: Colors.red),
               ),
             TextField(
               controller: _usernameController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Username',
               ),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             TextField(
               controller: _passwordController,
               obscureText: _isHidden,
@@ -103,19 +103,19 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 ),
               ),
             ),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
             _isLoading
-                ? Center(child: CircularProgressIndicator())
+                ? const Center(child: CircularProgressIndicator())
                 : ElevatedButton(
                     onPressed: _register,
-                    child: Text('Register'),
+                    child: const Text('Register'),
                   ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: Text('Already have an account? Log in'),
+              child: const Text('Already have an account? Log in'),
             ),
           ],
         ),

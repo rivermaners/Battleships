@@ -24,9 +24,8 @@ class _GameListState extends State<GameList> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('sessionToken'); // Clear the session token
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => LoginScreen()),
-      (Route<dynamic> route) =>
-          false, // This removes all the routes below the stack
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+      (Route<dynamic> route) => false,
     );
   }
 
@@ -55,7 +54,7 @@ class _GameListState extends State<GameList> {
     final String? aiType = await showDialog<String>(
       context: context,
       builder: (context) => SimpleDialog(
-        title: Text('Choose AI opponent'),
+        title: const Text('Choose AI opponent'),
         children: <String>['random', 'perfect', 'oneship']
             .map((String ai) => SimpleDialogOption(
                   onPressed: () => Navigator.pop(context, ai),
@@ -88,16 +87,17 @@ class _GameListState extends State<GameList> {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text("Confirm Forfeit"),
-              content: Text("Are you sure you want to forfeit this game?"),
+              title: const Text("Confirm Forfeit"),
+              content:
+                  const Text("Are you sure you want to forfeit this game?"),
               actions: <Widget>[
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(true),
-                  child: Text("Yes"),
+                  child: const Text("Yes"),
                 ),
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(false),
-                  child: Text("No"),
+                  child: const Text("No"),
                 ),
               ],
             );
@@ -122,34 +122,33 @@ class _GameListState extends State<GameList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Game List'),
+        title: const Text('Game List'),
         backgroundColor: Colors.blue,
         actions: [
-          IconButton(icon: Icon(Icons.refresh), onPressed: fetchGames),
+          IconButton(icon: const Icon(Icons.refresh), onPressed: fetchGames),
         ],
       ),
       drawer: Drawer(
         child: ListView(
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(color: Colors.blue),
+              decoration: const BoxDecoration(color: Colors.blue),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Menu',
+                  const Text('Menu',
                       style: TextStyle(color: Colors.white, fontSize: 24)),
                   FutureBuilder<String>(
-                    future:
-                        getUsername(), // Assume getUsername() fetches the username
+                    future: getUsername(),
                     builder:
                         (BuildContext context, AsyncSnapshot<String> snapshot) {
                       if (snapshot.connectionState == ConnectionState.done) {
                         return Text('Logged in as ${snapshot.data}',
-                            style:
-                                TextStyle(color: Colors.white, fontSize: 18));
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 18));
                       } else {
-                        return CircularProgressIndicator();
+                        return const CircularProgressIndicator();
                       }
                     },
                   ),
@@ -157,36 +156,36 @@ class _GameListState extends State<GameList> {
               ),
             ),
             ListTile(
-              leading: Icon(Icons.account_box_rounded),
-              title: Text('New Game'),
+              leading: const Icon(Icons.account_box_rounded),
+              title: const Text('New Game'),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => NewGame()));
+                    MaterialPageRoute(builder: (context) => const NewGame()));
               },
             ),
             ListTile(
-              leading: Icon(Icons.computer),
-              title: Text('New Game (AI)'),
+              leading: const Icon(Icons.computer),
+              title: const Text('New Game (AI)'),
               onTap: () {
                 Navigator.pop(context);
                 selectAndStartGameWithAI();
               },
             ),
             SwitchListTile(
-              title: Text('Show completed games'),
+              title: const Text('Show completed games'),
               value: showCompleted,
               onChanged: (bool value) {
                 setState(() {
                   showCompleted = value;
                 });
-                fetchGames(); // Fetch and filter games based on the toggle
-                Navigator.pop(context); // Optionally close the drawer
+                fetchGames();
+                Navigator.pop(context);
               },
             ),
             ListTile(
-              leading: Icon(Icons.exit_to_app),
-              title: Text('Log out'),
+              leading: const Icon(Icons.exit_to_app),
+              title: const Text('Log out'),
               onTap: () {
                 Navigator.pop(context);
                 logOut();

@@ -3,10 +3,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  static const String baseUrl =
-      'http://165.227.117.48'; // Consider updating to HTTPS for security
+  static const String baseUrl = 'http://165.227.117.48';
 
-  // Helper method to retrieve the current session token from SharedPreferences
   static Future<String> get _token async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString('sessionToken') ?? '';
@@ -50,7 +48,6 @@ class ApiService {
 
   static Future<List<dynamic>> getGames({bool showCompleted = false}) async {
     final token = await _token;
-    // Adjust URL based on whether completed games are to be fetched.
     final String url =
         showCompleted ? '$baseUrl/games?status=1&status=2' : '$baseUrl/games';
     final response = await http.get(
@@ -71,8 +68,7 @@ class ApiService {
         headers: {'Authorization': 'Bearer $token'});
 
     if (response.statusCode == 200) {
-      return jsonDecode(
-          response.body); // Ensure this contains all the new data fields
+      return jsonDecode(response.body);
     } else {
       throw Exception('Failed to get game details: ${response.body}');
     }

@@ -24,7 +24,7 @@ class _NewGameState extends State<NewGame> {
 
   void _startGame() async {
     if (_ships.length != 5) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Please place exactly 5 ships to start the game.')));
       return;
     }
@@ -45,10 +45,10 @@ class _NewGameState extends State<NewGame> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('New Game'),
+        title: const Text('New Game'),
       ),
       body: GridView.builder(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 5,
         ),
         itemCount: 25,
@@ -76,7 +76,7 @@ class _NewGameState extends State<NewGame> {
         onPressed: _ships.length == 5 ? _startGame : null,
         backgroundColor:
             _ships.length == 5 ? Theme.of(context).primaryColor : Colors.grey,
-        child: Icon(Icons.play_arrow),
+        child: const Icon(Icons.play_arrow),
       ),
     );
   }

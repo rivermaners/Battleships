@@ -1,4 +1,3 @@
-// login_screen.dart
 import 'package:flutter/material.dart';
 import 'package:battleships/services/api_service.dart';
 import 'package:battleships/views/game_list.dart';
@@ -32,7 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!_validateInputs()) return;
 
     setState(() {
-      _isLoading = true; // Start loading
+      _isLoading = true;
     });
 
     final String username = _usernameController.text;
@@ -52,7 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
       });
     } finally {
       setState(() {
-        _isLoading = false; // Stop loading
+        _isLoading = false;
       });
     }
   }
@@ -68,7 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Login'),
+        title: const Text('Login'),
         backgroundColor: Colors.blue,
       ),
       body: Padding(
@@ -80,15 +79,15 @@ class _LoginScreenState extends State<LoginScreen> {
             if (_errorMessage.isNotEmpty)
               Text(
                 _errorMessage,
-                style: TextStyle(color: Colors.red),
+                style: const TextStyle(color: Colors.red),
               ),
             TextField(
               controller: _usernameController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Username',
               ),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             TextField(
               controller: _passwordController,
               obscureText: _isHidden,
@@ -105,19 +104,19 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
             _isLoading
-                ? Center(child: CircularProgressIndicator())
+                ? const Center(child: CircularProgressIndicator())
                 : ElevatedButton(
                     onPressed: _login,
-                    child: Text('Login'),
+                    child: const Text('Login'),
                   ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             TextButton(
               onPressed: () {
                 Navigator.pushNamed(context, '/registration');
               },
-              child: Text('Don\'t have an account? Register'),
+              child: const Text('Don\'t have an account? Register'),
             ),
           ],
         ),

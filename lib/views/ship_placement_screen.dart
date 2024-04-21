@@ -28,17 +28,17 @@ class _ShipPlacementScreenState extends State<ShipPlacementScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Place Your Ships"),
+        title: const Text("Place Your Ships"),
         actions: [
           IconButton(
-            icon: Icon(Icons.save),
+            icon: const Icon(Icons.save),
             onPressed: () {
               if (selectedPositions.length == 5) {
                 widget.onPlacementComplete(selectedPositions);
                 Navigator.of(context).pop();
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
+                  const SnackBar(
                     content: Text("Please place exactly 5 ships."),
                   ),
                 );
@@ -48,7 +48,7 @@ class _ShipPlacementScreenState extends State<ShipPlacementScreen> {
         ],
       ),
       body: GridView.builder(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 5,
           childAspectRatio: 1.0,
           crossAxisSpacing: 2,
