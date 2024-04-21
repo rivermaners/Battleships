@@ -1,69 +1,120 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:battleships/services/api_service.dart';
 import 'package:battleships/views/auth/login_screen.dart';
-import 'package:battleships/views/game_view.dart'; // Import the game view page
-import 'package:battleships/views/new_game.dart'; // Import the new game page
+import 'package:battleships/services/api_service.dart';
+import 'package:battleships/views/new_game.dart';
+import 'package:battleships/views/ship_placement_screen.dart';
 
 class GameList extends StatefulWidget {
-  const GameList({Key? key}) : super(key: key);
-
   @override
   _GameListState createState() => _GameListState();
 }
 
 class _GameListState extends State<GameList> {
-  List<Map<String, dynamic>> _games = [];
-  bool _showCompletedGames = false;
+  List<dynamic> games = [];
+  bool showCompleted = false;
 
   @override
   void initState() {
     super.initState();
-    _refreshGames();
+    fetchGames();
   }
 
-  void _refreshGames() async {
-    try {
-      final games = await ApiService.getGames();
-      setState(() {
-        _games = games;
-      });
-    } catch (e) {
-      print('Failed to refresh games: $e');
-    }
-  }
-
-  void _logOut() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('sessionToken');
-
-    // Navigate back to the login screen
-    Navigator.pushAndRemoveUntil(
-      context,
+  Future<void> logOut() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('sessionToken'); // Clear the session token
+    Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => LoginScreen()),
-      (route) => false,
+      (Route<dynamic> route) =>
+          false, // This removes all the routes below the stack
     );
   }
 
-  void _forfeitGame(int gameId) async {
+  void fetchGames() async {
     try {
-      await ApiService.forfeitGame(gameId);
-      _refreshGames();
+      List<dynamic> allGames = await ApiService.getGames(showCompleted: false);
+      if (showCompleted) {
+        List<dynamic> completedGames = allGames.where((game) {
+          return game['status'] == 1 || game['status'] == 2;
+        }).toList();
+        setState(() {
+          games = completedGames;
+        });
+      } else {
+        setState(() {
+          games = allGames;
+        });
+      }
     } catch (e) {
-      print('Failed to forfeit game: $e');
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error fetching games: $e')));
     }
   }
 
-  void _startNewGame({String? ai}) async {
-    // Generate initial ship positions
-    final ships = ['A1', 'B1', 'C1', 'D1', 'E1'];
-    try {
-      // Start a new game
-      await ApiService.startGame(ships, ai: ai);
-      // Refresh the game list
-      _refreshGames();
-    } catch (e) {
-      print('Failed to start game: $e');
+  Future<void> selectAndStartGameWithAI() async {
+    final String? aiType = await showDialog<String>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: Text('Choose AI opponent'),
+        children: <String>['random', 'perfect', 'oneship']
+            .map((String ai) => SimpleDialogOption(
+                  onPressed: () => Navigator.pop(context, ai),
+                  child: Text(ai),
+                ))
+            .toList(),
+      ),
+    );
+
+    if (aiType != null) {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => ShipPlacementScreen(
+                    onPlacementComplete: (List<String> ships) async {
+                      try {
+                        await ApiService.startNewGame(ships, ai: aiType);
+                        fetchGames(); // Refresh the list after starting a new game
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text('Failed to start game with AI: $e')));
+                      }
+                    },
+                  )));
+    }
+  }
+
+  Future<void> _confirmForfeit(int gameId) async {
+    final bool confirm = await showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text("Confirm Forfeit"),
+              content: Text("Are you sure you want to forfeit this game?"),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: Text("Yes"),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text("No"),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+
+    if (confirm) {
+      try {
+        String message = await ApiService.forfeitGame(gameId);
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(message)));
+        fetchGames(); // Refresh the game list
+      } catch (e) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error forfeiting game: $e')));
+      }
     }
   }
 
@@ -72,75 +123,110 @@ class _GameListState extends State<GameList> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Game List'),
+        backgroundColor: Colors.blue,
         actions: [
-          IconButton(
-            icon: Icon(Icons.refresh),
-            onPressed: _refreshGames,
-          ),
+          IconButton(icon: Icon(Icons.refresh), onPressed: fetchGames),
         ],
       ),
       drawer: Drawer(
         child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
+          children: [
             DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue,
-              ),
-              child: Text(
-                'Menu',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
+              decoration: BoxDecoration(color: Colors.blue),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Menu',
+                      style: TextStyle(color: Colors.white, fontSize: 24)),
+                  FutureBuilder<String>(
+                    future:
+                        getUsername(), // Assume getUsername() fetches the username
+                    builder:
+                        (BuildContext context, AsyncSnapshot<String> snapshot) {
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        return Text('Logged in as ${snapshot.data}',
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 18));
+                      } else {
+                        return CircularProgressIndicator();
+                      }
+                    },
+                  ),
+                ],
               ),
             ),
             ListTile(
-              title: Text('Start a new game with a human opponent'),
-              onTap: () => _startNewGame(),
-            ),
-            ListTile(
-              title: Text('Start a new game with an AI opponent'),
-              onTap: () => _startNewGame(ai: 'random'),
-            ),
-            SwitchListTile(
-              title: Text('Show completed games'),
-              value: _showCompletedGames,
-              onChanged: (bool value) {
-                setState(() {
-                  _showCompletedGames = value;
-                });
+              leading: Icon(Icons.account_box_rounded),
+              title: Text('New Game'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => NewGame()));
               },
             ),
             ListTile(
+              leading: Icon(Icons.computer),
+              title: Text('New Game (AI)'),
+              onTap: () {
+                Navigator.pop(context);
+                selectAndStartGameWithAI();
+              },
+            ),
+            SwitchListTile(
+              title: Text('Show completed games'),
+              value: showCompleted,
+              onChanged: (bool value) {
+                setState(() {
+                  showCompleted = value;
+                });
+                fetchGames(); // Fetch and filter games based on the toggle
+                Navigator.pop(context); // Optionally close the drawer
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.exit_to_app),
               title: Text('Log out'),
-              onTap: _logOut,
+              onTap: () {
+                Navigator.pop(context);
+                logOut();
+              },
             ),
           ],
         ),
       ),
       body: ListView.builder(
-        itemCount: _games.length,
+        itemCount: games.length,
         itemBuilder: (context, index) {
-          final game = _games[index];
+          var game = games[index];
           return ListTile(
-            title: Text('Game ${game['id']}'),
-            subtitle: Text(
-                'Player 1: ${game['player1']}, Player 2: ${game['player2']}'),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => GameView(gameId: game['id'])),
-              );
-            },
-            trailing: IconButton(
-              icon: Icon(Icons.delete),
-              onPressed: () => _forfeitGame(game['id']),
+            title: Text(
+                'Game ID: ${game['id']} - ${game['player1']} vs ${game['player2']}'),
+            subtitle: Text('Status: ${game['status']}'),
+            trailing: PopupMenuButton<String>(
+              onSelected: (String result) {
+                if (result == 'forfeit') {
+                  _confirmForfeit(game['id']);
+                }
+              },
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                const PopupMenuItem<String>(
+                  value: 'forfeit',
+                  child: Text('Forfeit Game'),
+                ),
+              ],
             ),
+            onTap: () {
+              Navigator.pushNamed(context, '/game_view', arguments: game['id']);
+            },
           );
         },
       ),
     );
+  }
+
+  Future<String> getUsername() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('username') ?? 'No username found';
   }
 }

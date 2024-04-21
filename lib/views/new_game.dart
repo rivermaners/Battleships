@@ -23,14 +23,21 @@ class _NewGameState extends State<NewGame> {
   }
 
   void _startGame() async {
+    if (_ships.length != 5) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Please place exactly 5 ships to start the game.')));
+      return;
+    }
+
     try {
-      await ApiService.startGame(_ships);
+      await ApiService.startNewGame(_ships);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => GameList()),
       );
     } catch (e) {
-      print('Failed to start game: $e');
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Failed to start game: $e')));
     }
   }
 
@@ -67,6 +74,8 @@ class _NewGameState extends State<NewGame> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _ships.length == 5 ? _startGame : null,
+        backgroundColor:
+            _ships.length == 5 ? Theme.of(context).primaryColor : Colors.grey,
         child: Icon(Icons.play_arrow),
       ),
     );

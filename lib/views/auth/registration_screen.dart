@@ -14,17 +14,32 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final TextEditingController _passwordController = TextEditingController();
 
   String _errorMessage = '';
+  bool _isHidden = true;
+  bool _isLoading = false;
+
+  bool _validateInputs() {
+    if (_usernameController.text.isEmpty || _passwordController.text.isEmpty) {
+      setState(() {
+        _errorMessage = 'Username and password cannot be empty.';
+      });
+      return false;
+    }
+    return true;
+  }
 
   Future<void> _register() async {
+    if (!_validateInputs()) return;
+
+    setState(() {
+      _isLoading = true; // Start loading
+    });
+
     final String username = _usernameController.text;
     final String password = _passwordController.text;
 
     try {
       final response = await ApiService.register(username, password);
-      // Handle successful registration
       print('Registration successful: $response');
-
-      // Navigate to the login screen
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => LoginScreen()),
@@ -33,7 +48,18 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       setState(() {
         _errorMessage = 'Failed to register: $e';
       });
+    } finally {
+      setState(() {
+        _isLoading = false; // Stop loading
+      });
     }
+  }
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -41,6 +67,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Registration'),
+        backgroundColor: Colors.blue,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -62,16 +89,27 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             SizedBox(height: 12),
             TextField(
               controller: _passwordController,
-              obscureText: true,
+              obscureText: _isHidden,
               decoration: InputDecoration(
                 labelText: 'Password',
+                suffixIcon: IconButton(
+                  icon:
+                      Icon(_isHidden ? Icons.visibility_off : Icons.visibility),
+                  onPressed: () {
+                    setState(() {
+                      _isHidden = !_isHidden;
+                    });
+                  },
+                ),
               ),
             ),
             SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _register,
-              child: Text('Register'),
-            ),
+            _isLoading
+                ? Center(child: CircularProgressIndicator())
+                : ElevatedButton(
+                    onPressed: _register,
+                    child: Text('Register'),
+                  ),
             SizedBox(height: 12),
             TextButton(
               onPressed: () {

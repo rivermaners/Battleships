@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:battleships/views/auth/login_screen.dart';
 import 'package:battleships/views/auth/registration_screen.dart';
-import 'package:battleships/views/game_list.dart'; // Import the game list page
-import 'package:battleships/views/game_view.dart'; // Import the game view page
-import 'package:battleships/views/new_game.dart'; // Import the new game page
+import 'package:battleships/views/game_list.dart';
+import 'package:battleships/views/game_view.dart';
+import 'package:battleships/views/new_game.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,15 +17,16 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Battleships',
-      initialRoute: '/', // Specify the initial route
+      initialRoute: '/',
       routes: {
         '/': (context) => LoginScreen(),
         '/registration': (context) => RegistrationScreen(),
-        '/login': (context) => LoginScreen(), // Add the home route
-        '/game_list': (context) => GameList(), // Add the game list route
+        '/login': (context) => LoginScreen(),
+        '/game_list': (context) => GameList(),
+        '/new_game': (context) => NewGame(),
+        // Adding the new route for GameView
         '/game_view': (context) =>
-            GameView(gameId: 0), // Add the game view route
-        '/new_game': (context) => NewGame(), // Add the new game route
+            GameView(gameId: ModalRoute.of(context)!.settings.arguments as int),
       },
     );
   }
